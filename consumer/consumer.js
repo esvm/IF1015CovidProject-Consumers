@@ -3,7 +3,6 @@
 // rabbitmq implementation
 const amqp = require("amqplib/callback_api");
 const axios = require('axios');
-const { time } = require("console");
 const WebSocketServer = require('ws').Server;
 
 const RMQ_USER = "covid-api-user";
