@@ -10,7 +10,7 @@ const RMQ_HOST =
   "b-fccd3130-419b-4c98-b0d3-421707f92cbd.mq.sa-east-1.amazonaws.com";
 const RMQ_PORT = "5671";
 
-const COVID_API_URL = "https://covid19-brazil-api.now.sh/api/report/v1";
+const COVID_API_URL = "https://if1015covidreports-api.herokuapp.com";
 
 const QUEUE_GENERAL = "reports_queue_general";
 const QUEUE_COUNTRIES = "reports_queue_countries";
@@ -18,7 +18,7 @@ const QUEUE_COUNTRIES = "reports_queue_countries";
 let countriesData = {}
 let brazilData = {}
 
-const wss = new WebSocketServer({ port: 8080, path: '/requests' });
+const wss = new WebSocketServer({ port: process.env.PORT, path: '/requests' });
 wss.on('connection', ws => {
     console.log('new connection');
 
@@ -38,10 +38,9 @@ const consumeFromGeneralCasesQueue = (connectionChannel) => {
 
     const onMessage = msg => {
         const messageJson = msg.content.toString();
-        console.log('received: %s', messageJson);
         connectionChannel.ack(msg);
         brazilData = messageJson;
-        publishDataToCovidAPI(messageJson, '/urlGeneralTBD');
+        publishDataToCovidAPI(messageJson, 'reports/');
     };
 
     connectionChannel.consume(QUEUE_GENERAL, onMessage, { noAck: false });
@@ -53,10 +52,9 @@ const consumeFromCountriesQueue = (connectionChannel) => {
 
     const onMessage = msg => {
         const messageJson = msg.content.toString();
-        console.log('received: %s', messageJson);
         connectionChannel.ack(msg);
         countriesData = messageJson;
-        publishDataToCovidAPI(messageJson, '/urlCountriesTBD');
+        publishDataToCovidAPI(messageJson, 'reports/');
     };
 
     connectionChannel.consume(QUEUE_COUNTRIES, onMessage, { noAck: false });
@@ -78,18 +76,11 @@ amqp.connect(`amqps://${RMQ_USER}:${RMQ_PASSWORD}@${RMQ_HOST}:${RMQ_PORT}`, (err
 
 const axios = require('axios');
 
-const publishDataToCovidAPI = async (data, url) => {
-    await axios.post(url, data
+const publishDataToCovidAPI = async (data, endpoint) => {
+    await axios.post(`${COVID_API_URL}/${endpoint}`, data
     ).then((response) => {
         console.log("response: " + response);
     }, (error) =>{
         console.log("error: " + error);
     });
 }
-
-var http = require('http');
-http.createServer(function (req, res) {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.write('Hello World!');
-  res.end();
-}).listen(process.env.PORT);
