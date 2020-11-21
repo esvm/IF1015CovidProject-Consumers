@@ -16,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/esvm/IF1015CovidProject-Consumers/issues"
   },
-  "homepage": "https://github.com/esvm/IF1015CovidProject-Consumers#readme"
+  "homepage": "https://github.com/esvm/IF1015CovidProject-Consumers#readme",
+  "dependencies": {
+    "amqplib": "^0.6.0",
+    "axios": "^0.21.0",
+    "ws": "^7.4.0"
+  }
 }
