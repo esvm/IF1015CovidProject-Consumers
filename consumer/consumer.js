@@ -22,6 +22,10 @@ let brazilData = {}
 
 const wss = new WebSocketServer({ port: process.env.PORT || "8080", path: '/requests' });
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 wss.on('connection', ws => {
     console.log('new connection');
 
@@ -52,6 +56,7 @@ const consumeFromGeneralCasesQueue = (connectionChannel) => {
         connectionChannel.ack(msg);
         brazilData = messageJson;
         publishDataToCovidAPI(JSON.parse(messageJson).data, 'reports/brazil');
+        sleep(0.5 * 60 * 1000)
     };
 
     connectionChannel.consume(QUEUE_GENERAL, onMessage, { noAck: false });
@@ -66,6 +71,7 @@ const consumeFromCountriesQueue = (connectionChannel) => {
         connectionChannel.ack(msg);
         countriesData = messageJson;
         publishDataToCovidAPI(JSON.parse(messageJson).data, 'reports/countries');
+        sleep(0.5 * 60 * 1000)
     };
 
     connectionChannel.consume(QUEUE_COUNTRIES, onMessage, { noAck: false });

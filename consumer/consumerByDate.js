@@ -48,6 +48,7 @@ const consumeFromByDateCasesQueue = (connectionChannel) => {
         connectionChannel.ack(msg);
         generalByDateData = messageJson;
         publishDataToCovidAPI(JSON.parse(messageJson).data, 'reports/brazil');
+        sleep(1 * 60 * 1000)
     };
 
     connectionChannel.consume(QUEUE_GENERAL_BY_DATE, onMessage, { noAck: false });
