@@ -1,0 +1,20 @@
+{
+  "name": "if1015covidproject-consumers",
+  "version": "1.0.0",
+  "description": "",
+  "main": "consumer/consumer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node consumer/consumer.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esvm/IF1015CovidProject-Consumers.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/esvm/IF1015CovidProject-Consumers/issues"
+  },
+  "homepage": "https://github.com/esvm/IF1015CovidProject-Consumers#readme"
+}

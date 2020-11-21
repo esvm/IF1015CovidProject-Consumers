@@ -56,7 +56,7 @@ const consumeFromCountriesQueue = (connectionChannel) => {
         console.log('received: %s', messageJson);
         connectionChannel.ack(msg);
         countriesData = messageJson;
-        publishDataToCovidAPI(messageJSON, '/urlCountriesTBD');
+        publishDataToCovidAPI(messageJson, '/urlCountriesTBD');
     };
 
     connectionChannel.consume(QUEUE_COUNTRIES, onMessage, { noAck: false });
@@ -86,3 +86,10 @@ const publishDataToCovidAPI = async (data, url) => {
         console.log("error: " + error);
     });
 }
+
+var http = require('http');
+http.createServer(function (req, res) {
+  res.writeHead(200, {'Content-Type': 'text/plain'});
+  res.write('Hello World!');
+  res.end();
+}).listen(process.env.PORT);
