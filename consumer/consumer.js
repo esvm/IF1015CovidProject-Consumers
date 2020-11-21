@@ -2,6 +2,8 @@
 
 // rabbitmq implementation
 const amqp = require("amqplib/callback_api");
+const axios = require('axios');
+const { time } = require("console");
 const WebSocketServer = require('ws').Server;
 
 const RMQ_USER = "covid-api-user";
@@ -18,7 +20,8 @@ const QUEUE_COUNTRIES = "reports_queue_countries";
 let countriesData = {}
 let brazilData = {}
 
-const wss = new WebSocketServer({ port: process.env.PORT, path: '/requests' });
+const wss = new WebSocketServer({ port: process.env.PORT || "8080", path: '/requests' });
+
 wss.on('connection', ws => {
     console.log('new connection');
 
@@ -32,6 +35,14 @@ wss.on('connection', ws => {
     });
 });
 
+const publishDataToCovidAPI = async (data, endpoint) => {
+    await axios.post(`${COVID_API_URL}/${endpoint}`, data)
+        .then(
+            (response) => console.log("response: " + response.status),
+            (error) => console.log("error: " + error),
+        );
+}
+
 const consumeFromGeneralCasesQueue = (connectionChannel) => {
     connectionChannel.assertQueue(QUEUE_GENERAL, {durable: true});
     connectionChannel.prefetch(1)
@@ -40,7 +51,7 @@ const consumeFromGeneralCasesQueue = (connectionChannel) => {
         const messageJson = msg.content.toString();
         connectionChannel.ack(msg);
         brazilData = messageJson;
-        publishDataToCovidAPI(messageJson, 'reports/');
+        publishDataToCovidAPI(JSON.parse(messageJson).data, 'reports/brazil');
     };
 
     connectionChannel.consume(QUEUE_GENERAL, onMessage, { noAck: false });
@@ -54,7 +65,7 @@ const consumeFromCountriesQueue = (connectionChannel) => {
         const messageJson = msg.content.toString();
         connectionChannel.ack(msg);
         countriesData = messageJson;
-        publishDataToCovidAPI(messageJson, 'reports/');
+        publishDataToCovidAPI(JSON.parse(messageJson).data, 'reports/countries');
     };
 
     connectionChannel.consume(QUEUE_COUNTRIES, onMessage, { noAck: false });
@@ -73,14 +84,3 @@ amqp.connect(`amqps://${RMQ_USER}:${RMQ_PASSWORD}@${RMQ_HOST}:${RMQ_PORT}`, (err
     });
   }
 );
-
-const axios = require('axios');
-
-const publishDataToCovidAPI = async (data, endpoint) => {
-    await axios.post(`${COVID_API_URL}/${endpoint}`, data
-    ).then((response) => {
-        console.log("response: " + response);
-    }, (error) =>{
-        console.log("error: " + error);
-    });
-}

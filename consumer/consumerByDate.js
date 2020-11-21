@@ -2,6 +2,7 @@
 
 // rabbitmq implementation
 const amqp = require("amqplib/callback_api");
+const axios = require('axios');
 const WebSocketServer = require('ws').Server;
 
 const RMQ_USER = "covid-api-user";
@@ -16,7 +17,7 @@ const QUEUE_GENERAL_BY_DATE = "reports_queue_general_by_date";
 
 let generalByDateData = {}
 
-const wss = new WebSocketServer({ port: process.env.PORT, path: '/requests' });
+const wss = new WebSocketServer({ port: process.env.PORT || "8080", path: '/requests' });
 wss.on('connection', ws => {
     console.log('new connection');
 
@@ -30,6 +31,14 @@ wss.on('connection', ws => {
     });
 });
 
+const publishDataToCovidAPI = async (data, endpoint) => {
+    await axios.post(`${COVID_API_URL}/${endpoint}`, data)
+        .then(
+            (response) => console.log("response: " + response.status),
+            (error) => console.log("error: " + error),
+        );
+}
+
 const consumeFromByDateCasesQueue = (connectionChannel) => {
     connectionChannel.assertQueue(QUEUE_GENERAL_BY_DATE, {durable: true});
     connectionChannel.prefetch(1)
@@ -38,7 +47,7 @@ const consumeFromByDateCasesQueue = (connectionChannel) => {
         const messageJson = msg.content.toString();
         connectionChannel.ack(msg);
         generalByDateData = messageJson;
-        publishDataToCovidAPI(messageJson, 'reports/');
+        publishDataToCovidAPI(JSON.parse(messageJson).data, 'reports/brazil');
     };
 
     connectionChannel.consume(QUEUE_GENERAL_BY_DATE, onMessage, { noAck: false });
@@ -50,20 +59,10 @@ amqp.connect(`amqps://${RMQ_USER}:${RMQ_PASSWORD}@${RMQ_HOST}:${RMQ_PORT}`, (err
     connection.createChannel((err, channel) => {
       if (err) throw err;
       connectionChannel = channel;
-      console.log('conectou')
+      console.log('conectou no rabbitmq')
 
       consumeFromByDateCasesQueue(channel);
     });
   }
 );
 
-const axios = require('axios');
-
-const publishDataToCovidAPI = async (data, endpoint) => {
-    await axios.post(`${COVID_API_URL}/${endpoint}`, data
-    ).then((response) => {
-        console.log("response: " + response);
-    }, (error) =>{
-        console.log("error: " + error);
-    });
-}
