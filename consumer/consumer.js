@@ -31,7 +31,7 @@ wss.on('connection', ws => {
             demoData: demoData 
             })
         );
-    }, 3000)
+    }, 1000)
 
     ws.on('close', (code, reason) => {
         console.log(`connection closed: ${code} - ${reason}`);
