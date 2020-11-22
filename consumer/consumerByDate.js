@@ -19,10 +19,9 @@ const wss = new WebSocketServer({ port: process.env.PORT || "8080", path: '/requ
 wss.on('connection', ws => {
     console.log('new connection');
 
-    ws.send(JSON.stringify({ 
-            genByDateData: generalByDateData,
-        })
-    );
+    setInterval(function () {
+        ws.send(JSON.stringify({ genByDateData: generalByDateData }));
+    }, 3000)
 
     ws.on('close', (code, reason) => {
         console.log(`connection closed: ${code} - ${reason}`);
